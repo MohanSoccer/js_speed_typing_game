@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="vieport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            display: flex;
+            background-color: #607d8b;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .next_letter {
+            background-color: black;
+            color: white;
+        }
+
+        .correct {
+            color: green;
+            font-weight: bold;
+        }
+
+        .wrong {
+            color: red;
+            font-weight: bold;
+        }
+
+        #counter {
+            font-size: 48px;
+            margin-bottom: 18px;
+        }
+
+        #content {
+            font-size: 28px;
+            margin-bottom: 18px;
+            width: 50%;
+            padding: 13px;
+            background-color: white;
+        }
+
+        #typing_area {
+            width: 33%;
+            font-size: 18px;
+            font-weight: 600;
+            padding: 10px;
+            color: #ffeb3b;
+            border-radius: 13px;
+            font-family: cursive;
+            letter-spacing: 2px;
+            outline: none;
+            background: transparent;
+            border:1px solid #000;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="counter"></div>
+    <div id="content"></div>
+    <textarea rows="5" id="typing_area"></textarea>
+
+    <script>
+
+        let initialTime = 60;
+        let initialScore = 0;
+        let contentDiv = document.getElementById("content");
+        let counterDiv = document.getElementById("counter");
+        let typeingArea = document.getElementById("typing_area");
+
+        function init() {
+            let counterInt = setInterval(() => {
+                initialTime--;
+                counterDiv.innerHTML = initialTime;
+            }, 1000);
+
+            let checkInt = setInterval(() => {
+                if (initialTime < 0) {
+                    counterDiv.innerHTML = "Game Over"
+                    typeingArea.disabled = true;
+                    clearInterval(counterInt);
+                    clearInterval(checkInt);
+                }
+            }, 400);
+
+            getRandomContents();
+        }
+
+        init();
+
+        function getRandomContents() {
+            fetch("https://api.quotable.io/random")
+                .then(e => e.json())
+                .then(res => {
+                    typeingArea.value = "";
+                    contentDiv.innerHTML = "";
+                    let arrContents = res.content.split("");
+                    arrContents.forEach((element, idx) => {
+                        const textSpan = document.createElement("span");
+                        textSpan.innerText = element;
+                        contentDiv.appendChild(textSpan);
+                    });
+                })
+        }
+
+        typeingArea.addEventListener("keyup", (inp) => {
+            let contentQuote = contentDiv.querySelectorAll("span");
+            let inpValue = typeingArea.value.split('');
+
+            if (inpValue.length > contentQuote.length) {
+                getRandomContents();
+
+                return;
+            }
+
+            contentQuote.forEach((each, idx) => {
+
+                const inpContentVal = inpValue[idx];
+                if (inpContentVal) {
+                    each.classList.remove();
+                    if (inpContentVal === each.innerText) {
+                        each.className = "correct";
+                    }
+                    if (inpContentVal !== each.innerText) {
+                        each.className = "wrong";
+                    }
+                }
+                if (idx > inpValue.length) {
+                    contentQuote[idx - 1].className = "";
+                }
+            })
+        })
+
+
+
+
+
+    </script>
+</body>
+
+</html>
